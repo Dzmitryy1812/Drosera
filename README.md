@@ -1,89 +1,61 @@
-# Drosera
-Drosera Trap
-SERGEANT (lvl 3)
-Что требуется
-— Создай PoC уникальной идеи ловушки ->>>
-Создать рабочий прототип уникальной ловушки (Trap),
-которая:
-
--имеет техническую реализацию (код, логика),
--решает реальную проблему или покрывает конкретный use case (например: мониторинг governance-атак, ликвидности, прав доступа и т.д.),
--может быть потенциально применена другими.
-
-Такой PoC может включать:
--Solidity-контракт с логикой ловушки
--описание, какую проблему она решает
--инструкции по деплою и тестированию
-примеры сценариев, в которых она полезна
-
-Идея: Ловушка для мониторинга "манипуляций с ликвидностью" в DeFi пулах
+Идея: Ловушка мониторинга подозрительных транзакций с большими комиссиями (Gas Spike Trap)
 Проблема
-В DeFi часто происходят манипуляции с ликвидностью — резкие выводы или ввод больших объёмов ликвидности в пул, что может привести к ценовым манипуляциям, слиппеджу и убыткам для обычных пользователей. Такие атаки сложно отследить в реальном времени.
+В блокчейнах часто происходят атаки или манипуляции, сопровождающиеся резким ростом комиссий (gas price) — например, для приоритизации своих транзакций, проведения фронт-раннинга, атак типа MEV (Maximal Extractable Value). Такие всплески могут указывать на попытки манипуляций или атак на протокол.
 
 Цель ловушки
-Автоматически отслеживать резкие изменения ликвидности в пуле (например, Uniswap, Sushiswap) и сигнализировать о подозрительных действиях — резком снижении или росте ликвидности за короткий промежуток времени.
+Автоматически отслеживать резкие всплески комиссий (gas price) в транзакциях, связанных с вашим проектом или адресом, и сигнализировать о подозрительных активностях.
 
-``` Техническая реализация (PoC)
+Техническая реализация (PoC на Solidity)
+```
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
 import {ITrap} from "drosera-contracts/interfaces/ITrap.sol";
 
-interface IUniswapV2Pair {
-    function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast);
-}
+contract GasSpikeTrap is ITrap {
+    uint256 public constant GAS_PRICE_THRESHOLD = 200 gwei; // порог газа для тревоги
 
-contract LiquidityManipulationTrap is ITrap {
-    address public constant PAIR_ADDRESS = 0x...; // адрес пула UniswapV2 или аналогичного
-    uint256 public constant THRESHOLD_PERCENT = 30; // порог изменения ликвидности в процентах
+    // В collect можно передавать данные о последней транзакции (например, gasPrice)
+    // В реальности данные собирает оператор, здесь пример упрощённый
 
-    uint112 private lastReserve0;
-    uint112 private lastReserve1;
-
-    function collect() external returns (bytes memory) {
-        (uint112 reserve0, uint112 reserve1, ) = IUniswapV2Pair(PAIR_ADDRESS).getReserves();
-
-        // Сохраняем последние резервы для сравнения
-        lastReserve0 = reserve0;
-        lastReserve1 = reserve1;
-
-        return abi.encode(reserve0, reserve1);
+    function collect() external pure returns (bytes memory) {
+        // Здесь оператор должен передать gasPrice последней транзакции
+        // Для PoC возвращаем пустой байткод
+        return abi.encode(uint256(0));
     }
 
-    function shouldRespond(bytes[] calldata data) external view returns (bool, bytes memory) {
-        (uint112 currentReserve0, uint112 currentReserve1) = abi.decode(data[0], (uint112, uint112));
+    function shouldRespond(bytes[] calldata data) external pure returns (bool, bytes memory) {
+        uint256 gasPrice = abi.decode(data[0], (uint256));
 
-        // Вычисляем процент изменения по каждому резерву
-        uint256 change0 = _percentChange(lastReserve0, currentReserve0);
-        uint256 change1 = _percentChange(lastReserve1, currentReserve1);
-
-        if (change0 >= THRESHOLD_PERCENT || change1 >= THRESHOLD_PERCENT) {
-            return (true, abi.encode("Liquidity manipulation detected"));
+        if (gasPrice >= GAS_PRICE_THRESHOLD) {
+            return (true, abi.encode("Gas price spike detected"));
         }
-
         return (false, bytes(""));
-    }
-
-    function _percentChange(uint112 oldVal, uint112 newVal) internal pure returns (uint256) {
-        if (oldVal == 0) return 100;
-        uint256 diff = oldVal > newVal ? oldVal - newVal : newVal - oldVal;
-        return (diff * 100) / oldVal;
     }
 }
 ```
-
 Что решает
-Автоматический мониторинг резких изменений ликвидности в DeFi пулах.
+Позволяет вовремя реагировать на атаки с повышенным газом, которые могут привести к фронт-раннингу или другим манипуляциям.
 
-Предупреждение операторов и пользователей о возможных манипуляциях и атаках.
+Помогает операторам Drosera и разработчикам протоколов отслеживать подозрительные активности в сети.
 
-Повышение безопасности и прозрачности работы пулов.
+Универсально применима для любых проектов, где важна стабильность и безопасность транзакций.
 
 Инструкция по деплою и тестированию
-Укажите адрес пула в PAIR_ADDRESS.
+Задеплойте контракт в тестовой сети (например, Holesky).
 
-Задеплойте контракт в тестовой сети.
+Настройте оператора Drosera для передачи в collect данных о gasPrice транзакций.
 
-Настройте операторский нод Drosera для мониторинга.
+Смоделируйте транзакции с высоким gasPrice и проверьте срабатывание ловушки.
 
-Проведите тестовые операции с ликвидностью (добавление/удаление) и проверьте срабатывание ловушки.
+Отслеживайте события в дашборде Drosera.
+
+Примеры сценариев применения
+Мониторинг DeFi-протоколов на предмет атак MEV и фронт-раннинга.
+
+Контроль за транзакциями с критичных адресов (кошельков, контрактов).
+
+Повышение безопасности и устойчивости приложений.
+
+
+
