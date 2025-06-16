@@ -23,8 +23,8 @@ contract GasSpikeTrap is ITrap {
     event AlertTriggered(string message);
 
     // Функция возвращает закодированное значение порога газа
-    // Использует только константу, поэтому может быть pure
-    function collect() external pure returns (bytes memory) {
+    // Меняем pure на view, чтобы Drosera принял контракт
+    function collect() external view returns (bytes memory) {
         return abi.encode(GAS_PRICE_THRESHOLD);
     }
 
@@ -41,9 +41,10 @@ contract GasSpikeTrap is ITrap {
     // Обработчик тревоги
     function handleAlert(string calldata message) external {
         emit AlertTriggered(message);
-        // Можно добавить логику реакции здесь
+        // Тут можно добавить логику обработки тревоги, например, запись в логи или уведомление
     }
 }
+
 ```
 Что решает
 Позволяет вовремя реагировать на атаки с повышенным газом, которые могут привести к фронт-раннингу или другим манипуляциям.
