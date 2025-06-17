@@ -1,34 +1,55 @@
-Drosera Trap SERGEANT (lvl 3) Что требуется — Создай PoC уникальной идеи ловушки ->>> Создать рабочий прототип уникальной ловушки (Trap), которая:
 
--имеет техническую реализацию (код, логика), -решает реальную проблему или покрывает конкретный use case (например: мониторинг governance-атак, ликвидности, прав доступа и т.д.), -может быть потенциально применена другими.
+# Drosera Trap SERGEANT (Level 3) — Proof of Concept (PoC) for a Unique Trap
 
-Такой PoC может включать: -Solidity-контракт с логикой ловушки -описание, какую проблему она решает -инструкции по деплою и тестированию примеры сценариев, в которых она полезна 
-Идея: Ловушка мониторинга подозрительных транзакций с большими комиссиями (Gas Spike Trap)
-Проблема
-В блокчейнах часто происходят атаки или манипуляции, сопровождающиеся резким ростом комиссий (gas price) — например, для приоритизации своих транзакций, проведения фронт-раннинга, атак типа MEV (Maximal Extractable Value). Такие всплески могут указывать на попытки манипуляций или атак на протокол.
+## Objective
 
-Цель ловушки
-Автоматически отслеживать резкие всплески комиссий (gas price) в транзакциях, связанных с вашим проектом или адресом, и сигнализировать о подозрительных активностях.
+Create a working prototype of a unique trap (Trap) that:
 
-Техническая реализация (PoC на Solidity)
-```
+* Has a technical implementation (code, logic),
+* Solves a real problem or covers a specific use case (e.g., monitoring governance attacks, liquidity, access rights, etc.),
+* Can potentially be used by others.
+
+This PoC can include:
+
+* A Solidity contract with the trap logic,
+* A description of the problem it solves,
+* Deployment and testing instructions,
+* Example scenarios where it can be useful.
+
+---
+
+## Idea: Gas Spike Trap — Monitoring Suspicious Transactions with High Gas Fees
+
+### Problem
+
+Blockchain networks often experience attacks or manipulations accompanied by sudden spikes in transaction fees (gas price) — for example, to prioritize their transactions, perform front-running, or execute MEV (Maximal Extractable Value) attacks. These spikes may indicate attempts of manipulation or protocol attacks.
+
+### Goal of the Trap
+
+Automatically monitor sudden spikes in gas prices in transactions related to your project or address and alert about suspicious activities.
+
+---
+
+## Technical Implementation (PoC in Solidity)
+
+```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
 import {ITrap} from "drosera-contracts/interfaces/ITrap.sol";
 
 contract GasSpikeTrap is ITrap {
-    uint256 public constant GAS_PRICE_THRESHOLD = 200 gwei; // Порог газа для тревоги
+    uint256 public constant GAS_PRICE_THRESHOLD = 200 gwei; // Gas price threshold for alert
 
     event AlertTriggered(string message);
 
-    // Функция возвращает закодированное значение порога газа
-    // Меняем pure на view, чтобы Drosera принял контракт
+    // Returns encoded gas price threshold value
+    // Changed from pure to view to satisfy Drosera requirements
     function collect() external view returns (bytes memory) {
         return abi.encode(GAS_PRICE_THRESHOLD);
     }
 
-    // Анализирует переданные данные и определяет, нужно ли реагировать
+    // Analyzes input data and decides if response is needed
     function shouldRespond(bytes[] calldata data) external pure returns (bool, bytes memory) {
         uint256 gasPrice = abi.decode(data[0], (uint256));
 
@@ -38,77 +59,75 @@ contract GasSpikeTrap is ITrap {
         return (false, bytes(""));
     }
 
-    // Обработчик тревоги
+    // Alert handler
     function handleAlert(string calldata message) external {
         emit AlertTriggered(message);
-        // Тут можно добавить логику обработки тревоги, например, запись в логи или уведомление
+        // Add alert processing logic here, e.g., logging or notifications
     }
 }
-
 ```
-```
-адрес смарт-контракта  0x7a52d43C12229d66a341b5f5FF366495E8cF8829
-```
-Что решает
-Позволяет вовремя реагировать на атаки с повышенным газом, которые могут привести к фронт-раннингу или другим манипуляциям.
 
-Помогает операторам Drosera и разработчикам протоколов отслеживать подозрительные активности в сети.
+### Contract address
 
-Универсально применима для любых проектов, где важна стабильность и безопасность транзакций.
+`0x7a52d43C12229d66a341b5f5FF366495E8cF8829`
 
-Инструкция по деплою и тестированию
-Задеплойте контракт в тестовой сети (например, Holesky).
+---
 
-Настройте оператора Drosera для передачи в collect данных о gasPrice транзакций.
+## What It Solves
 
-Смоделируйте транзакции с высоким gasPrice и проверьте срабатывание ловушки.
+* Enables timely reaction to attacks involving gas price spikes, which can lead to front-running or other manipulations.
+* Helps Drosera operators and protocol developers monitor suspicious activities on the network.
+* Universally applicable to any project where transaction stability and security matter.
 
-Отслеживайте события в дашборде Drosera.
+---
 
-Примеры сценариев применения
-Мониторинг DeFi-протоколов на предмет атак MEV и фронт-раннинга.
+## Deployment and Testing Instructions
 
-Контроль за транзакциями с критичных адресов (кошельков, контрактов).
+1. Deploy the contract on a test network (e.g., Holesky).
+2. Configure a Drosera operator to provide real gasPrice data in the `collect` function.
+3. Simulate transactions with varying gas prices and verify trap activation.
+4. Monitor emitted events and trap status via the Drosera dashboard.
 
-Повышение безопасности и устойчивости приложений.
+---
 
+## Example Use Cases
 
-Что делать:
-Шаг 1. Настройка оператора Drosera для мониторинга ловушки
-Установите и запустите операторский нод Drosera (если ещё не сделали).
+* Monitoring DeFi protocols for MEV and front-running attacks.
+* Controlling transactions from critical addresses (wallets, contracts).
+* Increasing security and resilience of decentralized applications.
 
-В конфигурации оператора укажите адрес вашего контракта ловушки и методы для сбора данных (collect) и принятия решения (shouldRespond).
+---
 
-Настройте оператор для передачи реальных данных о gasPrice транзакций, которые он мониторит (например, через подключение к RPC Holesky и фильтрацию транзакций).
+## Next Steps
 
-Шаг 2. Тестирование в реальных условиях
-Проведите несколько транзакций с разным gasPrice в тестовой сети Holesky.
+### Step 1: Configure Drosera Operator to Monitor the Trap
 
-Убедитесь, что оператор корректно собирает данные и вызывает shouldRespond для принятия решения.
+* Install and run the Drosera operator node if not done yet.
+* In the operator config, specify your trap contract address and methods for data collection (`collect`) and decision making (`shouldRespond`).
+* Set up the operator to feed real transaction gasPrice data (via RPC node on Holesky or similar).
 
-Проверьте, что при превышении порога ловушка срабатывает и генерирует сигнал тревоги.
+### Step 2: Test in Real Conditions
 
-Шаг 3. Интеграция с дашбордом Drosera
-Добавьте ловушку в интерфейс https://app.drosera.io/network для мониторинга состояния.
+* Perform several transactions with different gas prices on the testnet.
+* Ensure the operator collects data and calls `shouldRespond` correctly.
+* Verify that trap triggers and generates alerts when threshold exceeded.
 
-Отслеживайте статистику срабатываний, логи и действия операторов.
+### Step 3: Integrate with Drosera Dashboard
 
-При необходимости настройте уведомления или автоматические реакции на срабатывания ловушки.
+* Add the trap to the [Drosera dashboard](https://app.drosera.io/network) for monitoring.
+* Track trigger statistics, logs, and operator actions.
+* Set up notifications or automatic responses if needed.
 
-Шаг 4. Улучшение и расширение функционала
-Добавьте в контракт возможность настраивать порог gasPrice через функцию (например, setThreshold).
+### Step 4: Improve and Extend Functionality
 
-Реализуйте сбор и анализ дополнительных параметров транзакций (например, адрес отправителя, количество газа).
+* Add a function to update gas price threshold dynamically (e.g., `setThreshold`).
+* Collect and analyze additional transaction parameters (sender address, gas used, etc.).
+* Integrate with oracles for external data or more complex scenarios.
 
-Интегрируйте с ораклами для получения внешних данных или более сложных сценариев.
+### Step 5: Document and Share
 
-Шаг 5. Документирование и распространение
-Опишите работу ловушки, её назначение и инструкцию по деплою.
+* Write clear documentation explaining the trap’s purpose, functionality, and deployment steps.
+* Share the trap with the community for potential adoption.
 
-Поделитесь кодом и инструкциями с сообществом Drosera для совместного использования.
-
-Получите обратную связь и улучшайте PoC.
-
-Если хотите, могу помочь с конкретными командами для настройки оператора, примерами конфигурационных файлов или с расширением контракта.
-
+---
 
