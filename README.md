@@ -60,12 +60,20 @@ contract GasSpikeTrap is ITrap {
         }
         return (false, bytes(""));
     }
+
+        function handleAlert(string calldata message) external {
+        emit AlertTriggered(message);
+       
+    }
+
+    event AlertTriggered(string message);
 }
+
 ```
 
 ### Contract address
 
-`0x1a73368ae06d541855f523c1ed887e4e53370b47`
+`0xac3A60DC9ED12c11bB37CB8E2CdD943940A42db9`
 
 ---
 
