@@ -41,7 +41,7 @@ pragma solidity ^0.8.20;
 import {ITrap} from "drosera-contracts/interfaces/ITrap.sol";
 
 contract GasSpikeTrap is ITrap {
-    uint256 public constant GAS_PRICE_THRESHOLD = 200 gwei; // 200 Gwei
+    uint256 public constant GAS_PRICE_THRESHOLD = 200 gwei;
 
     // This is called on every block over the shadow fork
     function collect() external view override returns (bytes memory) {
@@ -55,8 +55,7 @@ contract GasSpikeTrap is ITrap {
 
         uint256 latestGasPrice = abi.decode(data[0], (uint256));
 
-        // Hardcode the threshold here since this is a pure function
-        if (latestGasPrice >= 200 gwei) {
+                if (latestGasPrice >= 200 gwei) {
             return (true, abi.encode("Gas price spike detected"));
         }
         return (false, bytes(""));
