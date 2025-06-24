@@ -31,8 +31,9 @@ Automatically monitor sudden spikes in gas prices in transactions related to you
 ---
 
 ## Technical Implementation (PoC in Solidity)
-
+## GasSpikeTrap.sol
 ```solidity
+
 //24.06.2025
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
@@ -61,13 +62,23 @@ contract GasSpikeTrap is ITrap {
         return (false, bytes(""));
     }
 }
-
-
 ```
+## AlertReceiver.sol
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
 
+contract AlertReceiver {
+    event AlertReceived(string message);
+
+    function handleAlert(string calldata message) external {
+        emit AlertReceived(message);
+            }
+}
+```
 ### Contract address
 
-`0x0526ead1018463547c3Ba8daF6C4c82Ea1F6F0B5`
+`0x5786daEd760865df2a38587fbf4bb600bf4e167E`
 
 ---
 
@@ -129,5 +140,6 @@ contract GasSpikeTrap is ITrap {
 
 ---
 
-![image](https://github.com/user-attachments/assets/d5148875-5fa4-4eb7-ba27-df6b7dcdf618)
+
+![image](https://github.com/user-attachments/assets/13ee9361-a8ed-4cdf-9e1f-8082fd630b11)
 
