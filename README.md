@@ -1,3 +1,4 @@
+![image](https://github.com/user-attachments/assets/772cce88-a48b-48ee-8c9b-19a79acc439d)
 
 # Drosera Trap SERGEANT (Level 3) — Proof of Concept (PoC) for a Unique Trap
 
