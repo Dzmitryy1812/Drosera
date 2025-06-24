@@ -33,36 +33,32 @@ Automatically monitor sudden spikes in gas prices in transactions related to you
 ## Technical Implementation (PoC in Solidity)
 
 ```solidity
+//24.06.2025
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
 import {ITrap} from "drosera-contracts/interfaces/ITrap.sol";
 
 contract GasSpikeTrap is ITrap {
-    uint256 public constant GAS_PRICE_THRESHOLD = 200 gwei; // Gas price threshold for alert
+    uint256 public constant GAS_PRICE_THRESHOLD = 200 gwei; // 200 Gwei
 
-    event AlertTriggered(string message);
-
-    // Returns encoded gas price threshold value
-    // Changed from pure to view to satisfy Drosera requirements
-    function collect() external view returns (bytes memory) {
-        return abi.encode(GAS_PRICE_THRESHOLD);
+    // This is called on every block over the shadow fork
+    function collect() external view override returns (bytes memory) {
+        // Collect current block basefee (gas price)
+        return abi.encode(block.basefee);
     }
 
-    // Analyzes input data and decides if response is needed
-    function shouldRespond(bytes[] calldata data) external pure returns (bool, bytes memory) {
-        uint256 gasPrice = abi.decode(data[0], (uint256));
+    // This is called with the output of collect() over a range of blocks
+    function shouldRespond(bytes[] calldata data) external pure override returns (bool, bytes memory) {
+        if (data.length == 0) return (false, bytes(""));
 
-        if (gasPrice >= GAS_PRICE_THRESHOLD) {
+        uint256 latestGasPrice = abi.decode(data[0], (uint256));
+
+        // Hardcode the threshold here since this is a pure function
+        if (latestGasPrice >= 200 gwei) {
             return (true, abi.encode("Gas price spike detected"));
         }
         return (false, bytes(""));
-    }
-
-    // Alert handler
-    function handleAlert(string calldata message) external {
-        emit AlertTriggered(message);
-        // Add alert processing logic here, e.g., logging or notifications
     }
 }
 ```
