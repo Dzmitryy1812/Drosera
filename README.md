@@ -65,7 +65,7 @@ contract GasSpikeTrap is ITrap {
 
 ### Contract address
 
-`0x7a52d43C12229d66a341b5f5FF366495E8cF8829`
+`0x1a73368ae06d541855f523c1ed887e4e53370b47`
 
 ---
 
