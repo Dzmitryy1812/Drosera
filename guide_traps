@@ -1,6 +1,6 @@
 ## 🪤 Drosera Trap Deployment Guide (Get Sergeant Role)
 
-This guide helps you deploy your own trap in [Drosera Network](https://drosera.network) to qualify for the **Sergeant** role.
+This guide helps you deploy your own trap in [Drosera Network](https://www.drosera.io/) to qualify for the **Sergeant** role.
 
 ---
 
@@ -9,7 +9,7 @@ This guide helps you deploy your own trap in [Drosera Network](https://drosera.n
 * 2 CPU Cores
 * 4 GB RAM
 * 20 GB Disk Space
-* VPS (Recommended: [Get a \$5 VPS](https://www.vultr.com/?ref=YOUR-REF-CODE))
+* VPS (Recommended: [Get a \$5 VPS](https://www.vultr.com/))
 * [Holesky ETH RPC](https://www.alchemy.com/) via Alchemy or QuickNode
 * Fund wallet with Holesky ETH
 
